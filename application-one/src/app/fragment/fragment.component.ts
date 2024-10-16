@@ -1,44 +1,46 @@
 import {
   AfterViewInit,
   CUSTOM_ELEMENTS_SCHEMA,
+  ChangeDetectorRef,
   Component,
-  Inject,
+  ElementRef,
   OnInit,
   Renderer2,
+  ViewChild,
 } from '@angular/core';
-import { FragmentService } from './services/fragment.service';
-import { DOCUMENT } from '@angular/common';
+import { ContentService } from './services/content.service';
 
 @Component({
   selector: 'app-fragment',
   standalone: true,
-  imports: [],
   templateUrl: './fragment.component.html',
   styleUrl: './fragment.component.scss',
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class FragmentComponent implements AfterViewInit {
+export class FragmentComponent implements OnInit {
+  public providers = new Map();
+
+  @ViewChild('app2', { static: true }) app2!: ElementRef;
+
   constructor(
-    private readonly fragmentService: FragmentService,
     private readonly renderer: Renderer2,
-    @Inject(DOCUMENT) private document: Document
+    private readonly cd: ChangeDetectorRef,
+    private readonly contentService: ContentService
   ) {}
 
-  ngAfterViewInit() {
-    this.fragmentService.loadScript(
-      this.renderer,
-      this.document.body,
-      'http://localhost:8080/main-es5.js'
-    );
-    this.fragmentService.loadScript(
-      this.renderer,
-      this.document.body,
-      'http://localhost:8080/runtime-es5.js'
-    );
-    this.fragmentService.loadScript(
-      this.renderer,
-      this.document.body,
-      'http://localhost:8080/polyfills-es5.js'
-    );
+  ngOnInit() {
+    this.providers.set('contentService', this.contentService);
+    this.render();
+  }
+
+  render() {
+    const existingComponent =
+      this.app2.nativeElement.querySelector('application-two');
+
+    const webComponent = this.renderer.createElement('application-two');
+    this.renderer.setProperty(webComponent, 'providers', this.providers);
+    this.renderer.setProperty(webComponent, 'data', { key: 'value' });
+    this.renderer.appendChild(this.app2.nativeElement, webComponent);
+    this.cd.detectChanges();
   }
 }

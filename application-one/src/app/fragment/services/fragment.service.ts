@@ -7,10 +7,17 @@ export class FragmentService {
   public loadScript(
     renderer: Renderer2,
     document: HTMLElement,
-    url: string
+    src: string
   ): void {
-    const script = renderer.createElement('script');
-    renderer.setAttribute(script, 'src', url);
-    renderer.appendChild(document, script);
+    if (!this.isScriptAlreadyLoaded(document, src)) {
+      const script = renderer.createElement('script');
+      script.type = 'text/javascript';
+      script.src = src;
+      document.appendChild(script);
+    }
+  }
+
+  isScriptAlreadyLoaded(document: HTMLElement, src: string): boolean {
+    return !!document.querySelector(`script[src="${src}"]`);
   }
 }
