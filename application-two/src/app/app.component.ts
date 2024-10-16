@@ -27,6 +27,9 @@ export class AppComponent implements OnInit {
       const contentService = this.providers.get("contentService");
       console.log(this.providers);
       console.log(contentService.getData());
+      contentService.getData().asyncData.subscribe((response: string) => {
+        console.log(response);
+      });
     }
   }
 }
